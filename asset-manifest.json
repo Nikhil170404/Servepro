@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/Servepro/static/css/main.e6c13ad2.css",
+    "main.js": "/Servepro/static/js/main.ca140b68.js",
+    "static/js/488.6a3935a8.chunk.js": "/Servepro/static/js/488.6a3935a8.chunk.js",
+    "index.html": "/Servepro/index.html",
+    "main.e6c13ad2.css.map": "/Servepro/static/css/main.e6c13ad2.css.map",
+    "main.ca140b68.js.map": "/Servepro/static/js/main.ca140b68.js.map",
+    "488.6a3935a8.chunk.js.map": "/Servepro/static/js/488.6a3935a8.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.ca140b68.js"
+  ]
+}
