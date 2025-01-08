@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Connection status collection - allow read for authenticated users
+    match /_connection_status_/{document=**} {
+      allow read: if isAuthenticated();
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAuthenticated() && isAdmin();
+    }
+
+    // Available services collection
+    match /services/{serviceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Projects collection
+    match /projects/{projectId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.clientId == request.auth.uid || 
+         resource.data.serviceProviderId == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        (resource.data.clientId == request.auth.uid || 
+         resource.data.serviceProviderId == request.auth.uid ||
+         isAdmin());
+      allow delete: if isAuthenticated() && 
+        (resource.data.clientId == request.auth.uid || isAdmin());
+    }
+
+    // Service requests collection
+    match /serviceRequests/{requestId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || 
+         resource.data.serviceProviderId == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || 
+         resource.data.serviceProviderId == request.auth.uid ||
+         isAdmin());
+      allow delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Support tickets collection
+    match /supportTickets/{ticketId} {
+      allow read: if isAdmin() || isOwner(resource.data.userId);
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow update: if isAdmin() || isOwner(resource.data.userId);
+      allow delete: if isAdmin();
+    }
+
+    // Payments collection
+    match /payments/{paymentId} {
+      allow read: if isAdmin() || isOwner(resource.data.userId);
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Chat messages collection
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.clientId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() &&
+        (resource.data.clientId == request.auth.uid || isAdmin());
+    }
+
+    // Chat Messages collection
+    match /chatMessages/{messageId} {
+      allow read: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && 
+        (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Chatbot Learning collection
+    match /chatbotLearning/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Chatbot Conversations collection
+    match /chatbotConversations/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Project milestones collection
+    match /milestones/{milestoneId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.clientId == request.auth.uid || isAdmin());
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
